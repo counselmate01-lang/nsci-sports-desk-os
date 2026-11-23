@@ -1,0 +1,129 @@
+{
+  "name": "NSCI – Manager update draft (review in app)",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "30 17 * * 1-6"
+            }
+          ]
+        }
+      },
+      "id": "1dfaeb1e-0447-47a3-8f4b-cba7b0830773",
+      "name": "Weekdays 17:30",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        0,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.NSCI_APP_URL }}/api/automation/manager-report",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "options": {
+          "timeout": 60000
+        }
+      },
+      "id": "71d23be7-90ec-42b8-ad26-5e207404cd0e",
+      "name": "Create manager update draft",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        260,
+        0
+      ],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "REPLACE_ME",
+          "name": "NSCI automation"
+        }
+      },
+      "notes": "Credential: Header Auth named 'NSCI automation' with Name=Authorization, Value=Bearer <AUTOMATION_SECRET>"
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "messages",
+        "options": {}
+      },
+      "id": "c8198fdd-7d57-444e-ae1b-1cc4014a1efd",
+      "name": "One item per message",
+      "type": "n8n-nodes-base.splitOut",
+      "typeVersion": 1,
+      "position": [
+        520,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "fromEmail": "={{ $env.NSCI_FROM_EMAIL }}",
+        "toEmail": "={{ $env.NSCI_NOTIFY_EMAIL }}",
+        "subject": "={{ $json.title }}",
+        "emailFormat": "text",
+        "text": "={{ $json.text }}",
+        "options": {}
+      },
+      "id": "bc0fd9f3-6d10-469d-8020-f852cda69c2e",
+      "name": "Send by email",
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.1,
+      "position": [
+        760,
+        0
+      ],
+      "credentials": {
+        "smtp": {
+          "id": "REPLACE_ME",
+          "name": "SMTP account"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Weekdays 17:30": {
+      "main": [
+        [
+          {
+            "node": "Create manager update draft",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create manager update draft": {
+      "main": [
+        [
+          {
+            "node": "One item per message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "One item per message": {
+      "main": [
+        [
+          {
+            "node": "Send by email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "timezone": "Asia/Kolkata"
+  },
+  "active": false
+}
