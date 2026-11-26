@@ -1,0 +1,333 @@
+{
+  "name": "NSCI – Separate reminder jobs (alternative)",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "0 9 * * *"
+            }
+          ]
+        }
+      },
+      "id": "10e3f6e9-b4e6-468d-984f-7dfe83f2ce0c",
+      "name": "Morning 9:00",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        0,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.NSCI_APP_URL }}/api/automation/morning",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "options": {
+          "timeout": 60000
+        }
+      },
+      "id": "ac9d8ac5-a714-4739-be47-6f6ea6eff524",
+      "name": "POST morning",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        260,
+        0
+      ],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "REPLACE_ME",
+          "name": "NSCI automation"
+        }
+      },
+      "notes": "Credential: Header Auth named 'NSCI automation' with Name=Authorization, Value=Bearer <AUTOMATION_SECRET>"
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "30 18 * * *"
+            }
+          ]
+        }
+      },
+      "id": "efb11521-30cb-41c2-8c05-a2bc15e4566d",
+      "name": "Evening 18:30",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        0,
+        150
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.NSCI_APP_URL }}/api/automation/evening",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "options": {
+          "timeout": 60000
+        }
+      },
+      "id": "002b07e1-11cc-445e-8eff-40602119b184",
+      "name": "POST evening",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        260,
+        150
+      ],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "REPLACE_ME",
+          "name": "NSCI automation"
+        }
+      },
+      "notes": "Credential: Header Auth named 'NSCI automation' with Name=Authorization, Value=Bearer <AUTOMATION_SECRET>"
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "0 11 * * *"
+            }
+          ]
+        }
+      },
+      "id": "81ee19af-3783-4459-bf4d-139d0536f002",
+      "name": "Overdue check 11:00",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        0,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.NSCI_APP_URL }}/api/automation/overdue",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "options": {
+          "timeout": 60000
+        }
+      },
+      "id": "a424488d-0479-481f-8dc7-b9afa0fd8d2e",
+      "name": "POST overdue",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        260,
+        300
+      ],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "REPLACE_ME",
+          "name": "NSCI automation"
+        }
+      },
+      "notes": "Credential: Header Auth named 'NSCI automation' with Name=Authorization, Value=Bearer <AUTOMATION_SECRET>"
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "0 10 * * *"
+            }
+          ]
+        }
+      },
+      "id": "f781aa0b-4582-485e-a7ef-8b94319fd61a",
+      "name": "Waiting follow-ups 10:00",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        0,
+        450
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.NSCI_APP_URL }}/api/automation/waiting-followups",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "options": {
+          "timeout": 60000
+        }
+      },
+      "id": "4e065e67-b8cb-469d-895c-cc04720db1b5",
+      "name": "POST waiting-followups",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        260,
+        450
+      ],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "REPLACE_ME",
+          "name": "NSCI automation"
+        }
+      },
+      "notes": "Credential: Header Auth named 'NSCI automation' with Name=Authorization, Value=Bearer <AUTOMATION_SECRET>"
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "messages",
+        "options": {}
+      },
+      "id": "0ecc9fd5-b9a1-4b5c-be4f-d9790c73cca6",
+      "name": "One item per message",
+      "type": "n8n-nodes-base.splitOut",
+      "typeVersion": 1,
+      "position": [
+        520,
+        150
+      ]
+    },
+    {
+      "parameters": {
+        "fromEmail": "={{ $env.NSCI_FROM_EMAIL }}",
+        "toEmail": "={{ $env.NSCI_NOTIFY_EMAIL }}",
+        "subject": "={{ $json.title }}",
+        "emailFormat": "text",
+        "text": "={{ $json.text }}",
+        "options": {}
+      },
+      "id": "8426df20-d2d5-48b5-a045-644adf8b3293",
+      "name": "Send by email",
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.1,
+      "position": [
+        760,
+        150
+      ],
+      "credentials": {
+        "smtp": {
+          "id": "REPLACE_ME",
+          "name": "SMTP account"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Morning 9:00": {
+      "main": [
+        [
+          {
+            "node": "POST morning",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "POST morning": {
+      "main": [
+        [
+          {
+            "node": "One item per message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Evening 18:30": {
+      "main": [
+        [
+          {
+            "node": "POST evening",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "POST evening": {
+      "main": [
+        [
+          {
+            "node": "One item per message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Overdue check 11:00": {
+      "main": [
+        [
+          {
+            "node": "POST overdue",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "POST overdue": {
+      "main": [
+        [
+          {
+            "node": "One item per message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Waiting follow-ups 10:00": {
+      "main": [
+        [
+          {
+            "node": "POST waiting-followups",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "POST waiting-followups": {
+      "main": [
+        [
+          {
+            "node": "One item per message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "One item per message": {
+      "main": [
+        [
+          {
+            "node": "Send by email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "timezone": "Asia/Kolkata"
+  },
+  "active": false
+}

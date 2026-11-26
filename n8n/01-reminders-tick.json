@@ -1,0 +1,162 @@
+{
+  "name": "NSCI – Reminders (every 15 min)",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "minutes",
+              "minutesInterval": 15
+            }
+          ]
+        }
+      },
+      "id": "c0feede1-8ba4-46b0-9c68-16291a0fa6d1",
+      "name": "Every 15 minutes",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        0,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.NSCI_APP_URL }}/api/automation/tick",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "options": {
+          "timeout": 60000
+        }
+      },
+      "id": "7ea8cc87-0458-400a-aea7-8e3f4eb7ed1f",
+      "name": "Run due reminders",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        240,
+        0
+      ],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "REPLACE_ME",
+          "name": "NSCI automation"
+        }
+      },
+      "notes": "Credential: Header Auth named 'NSCI automation' with Name=Authorization, Value=Bearer <AUTOMATION_SECRET>"
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "messages",
+        "options": {}
+      },
+      "id": "f98c1ce6-c49f-41e7-a71d-62b65dce805c",
+      "name": "One item per message",
+      "type": "n8n-nodes-base.splitOut",
+      "typeVersion": 1,
+      "position": [
+        480,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "fromEmail": "={{ $env.NSCI_FROM_EMAIL }}",
+        "toEmail": "={{ $env.NSCI_NOTIFY_EMAIL }}",
+        "subject": "={{ $json.title }}",
+        "emailFormat": "text",
+        "text": "={{ $json.text }}",
+        "options": {}
+      },
+      "id": "42e380b6-d58f-4cde-aaa5-1ed2f6ee80a0",
+      "name": "Send by email",
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.1,
+      "position": [
+        720,
+        -80
+      ],
+      "credentials": {
+        "smtp": {
+          "id": "REPLACE_ME",
+          "name": "SMTP account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://graph.facebook.com/v21.0/{{ $env.WHATSAPP_PHONE_NUMBER_ID }}/messages",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ messaging_product: 'whatsapp', to: $env.NSCI_NOTIFY_WHATSAPP, type: 'text', text: { body: ($json.title + '\\n\\n' + $json.text).slice(0, 4000) } }) }}",
+        "options": {}
+      },
+      "id": "7b4b7261-06c1-40e0-b19c-2e353570c921",
+      "name": "Send by WhatsApp (enable later)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        720,
+        80
+      ],
+      "disabled": true,
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "REPLACE_ME",
+          "name": "WhatsApp token"
+        }
+      },
+      "notes": "Header Auth: Authorization = Bearer <WHATSAPP_ACCESS_TOKEN>. Free-text messages only reach numbers that messaged the bot in the last 24h; otherwise use an approved template."
+    }
+  ],
+  "connections": {
+    "Every 15 minutes": {
+      "main": [
+        [
+          {
+            "node": "Run due reminders",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Run due reminders": {
+      "main": [
+        [
+          {
+            "node": "One item per message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "One item per message": {
+      "main": [
+        [
+          {
+            "node": "Send by email",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Send by WhatsApp (enable later)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "timezone": "Asia/Kolkata"
+  },
+  "active": false
+}
